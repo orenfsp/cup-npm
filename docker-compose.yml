@@ -1,0 +1,199 @@
+services:
+  web:
+    build:
+      context: ./apps/web
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
+    container_name: otklik-web
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
+      NEXT_TELEMETRY_DISABLED: "1"
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:3000"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    stop_grace_period: 20s
+
+  bootstrap:
+    image: otklik-api:demo
+    container_name: otklik-bootstrap
+    restart: "no"
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-otklik}:${POSTGRES_PASSWORD:-otklik_demo_db_2026}@postgres:5432/${POSTGRES_DB:-otklik}
+      VALKEY_URL: redis://valkey:6379/0
+      JWT_SECRET: ${JWT_SECRET:-demo-only-jwt-secret-change-before-prod-2026}
+      TRACK_HMAC_SECRET: ${TRACK_HMAC_SECRET:-demo-only-track-hmac-change-before-prod-2026}
+      RATE_LIMIT_HMAC_SECRET: ${RATE_LIMIT_HMAC_SECRET:-demo-only-rate-hmac-change-before-prod-2026}
+      REFRESH_TOKEN_HMAC_SECRET: ${REFRESH_TOKEN_HMAC_SECRET:-demo-only-refresh-hmac-change-before-prod-2026}
+      APPLICANT_ACCESS_JWT_SECRET: ${APPLICANT_ACCESS_JWT_SECRET:-demo-only-applicant-jwt-change-before-prod-2026}
+      CONTENT_ENCRYPTION_KEY: ${CONTENT_ENCRYPTION_KEY:-b3RrbGlrLWRlbW8tY29udGVudC1rZXktMzItYnl0ZSE=}
+      DEMO_OPERATOR_LOGIN: ${DEMO_OPERATOR_LOGIN:-demo_operator}
+      DEMO_OPERATOR_PASSWORD: ${DEMO_OPERATOR_PASSWORD:-OperatorDemo_2026!}
+      DEMO_EXPERT_LOGIN: ${DEMO_EXPERT_LOGIN:-demo_expert}
+      DEMO_EXPERT_PASSWORD: ${DEMO_EXPERT_PASSWORD:-ExpertDemo_2026!}
+      DEMO_PSYCHOLOGIST_LOGIN: ${DEMO_PSYCHOLOGIST_LOGIN:-demo_psychologist}
+      DEMO_PSYCHOLOGIST_PASSWORD: ${DEMO_PSYCHOLOGIST_PASSWORD:-ExpertDemo_2026!}
+      DEMO_LAWYER_LOGIN: ${DEMO_LAWYER_LOGIN:-demo_lawyer}
+      DEMO_LAWYER_PASSWORD: ${DEMO_LAWYER_PASSWORD:-ExpertDemo_2026!}
+      DEMO_SOCIAL_LOGIN: ${DEMO_SOCIAL_LOGIN:-demo_social}
+      DEMO_SOCIAL_PASSWORD: ${DEMO_SOCIAL_PASSWORD:-ExpertDemo_2026!}
+      DEMO_CONFLICT_LOGIN: ${DEMO_CONFLICT_LOGIN:-demo_conflict}
+      DEMO_CONFLICT_PASSWORD: ${DEMO_CONFLICT_PASSWORD:-ExpertDemo_2026!}
+      DEMO_ADMIN_LOGIN: ${DEMO_ADMIN_LOGIN:-demo_admin}
+      DEMO_ADMIN_PASSWORD: ${DEMO_ADMIN_PASSWORD:-AdminDemo_2026!}
+    command:
+      - sh
+      - -c
+      - >-
+        alembic upgrade head &&
+        python -m app.scripts.seed_reference_data &&
+        python -m app.scripts.seed_demo_staff &&
+        python -m app.scripts.seed_demo_scenario
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+
+  api:
+    image: otklik-api:demo
+    build:
+      context: ./services/api
+    container_name: otklik-api
+    restart: unless-stopped
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-otklik}:${POSTGRES_PASSWORD:-otklik_demo_db_2026}@postgres:5432/${POSTGRES_DB:-otklik}
+      VALKEY_URL: redis://valkey:6379/0
+      JWT_SECRET: ${JWT_SECRET:-demo-only-jwt-secret-change-before-prod-2026}
+      JWT_ISSUER: ${JWT_ISSUER:-otklik-api}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:-otklik-staff}
+      TRACK_HMAC_SECRET: ${TRACK_HMAC_SECRET:-demo-only-track-hmac-change-before-prod-2026}
+      RATE_LIMIT_HMAC_SECRET: ${RATE_LIMIT_HMAC_SECRET:-demo-only-rate-hmac-change-before-prod-2026}
+      REFRESH_TOKEN_HMAC_SECRET: ${REFRESH_TOKEN_HMAC_SECRET:-demo-only-refresh-hmac-change-before-prod-2026}
+      APPLICANT_ACCESS_JWT_SECRET: ${APPLICANT_ACCESS_JWT_SECRET:-demo-only-applicant-jwt-change-before-prod-2026}
+      CONTENT_ENCRYPTION_KEY: ${CONTENT_ENCRYPTION_KEY:-b3RrbGlrLWRlbW8tY29udGVudC1rZXktMzItYnl0ZSE=}
+      ACCESS_TOKEN_TTL_MINUTES: ${ACCESS_TOKEN_TTL_MINUTES:-15}
+      REFRESH_SESSION_TTL_DAYS: ${REFRESH_SESSION_TTL_DAYS:-7}
+      REFRESH_COOKIE_NAME: ${REFRESH_COOKIE_NAME:-otklik_staff_refresh}
+      LOGIN_RATE_LIMIT_ATTEMPTS: ${LOGIN_RATE_LIMIT_ATTEMPTS:-5}
+      LOGIN_RATE_LIMIT_WINDOW_SECONDS: ${LOGIN_RATE_LIMIT_WINDOW_SECONDS:-300}
+      APPLICANT_ACCESS_TTL_MINUTES: ${APPLICANT_ACCESS_TTL_MINUTES:-30}
+      APPLICANT_ACCESS_COOKIE_NAME: ${APPLICANT_ACCESS_COOKIE_NAME:-otklik_appeal_access}
+      TRACK_ACCESS_RATE_LIMIT_ATTEMPTS: ${TRACK_ACCESS_RATE_LIMIT_ATTEMPTS:-5}
+      TRACK_ACCESS_RATE_LIMIT_WINDOW_SECONDS: ${TRACK_ACCESS_RATE_LIMIT_WINDOW_SECONDS:-60}
+      APPEAL_SUBMISSION_RATE_LIMIT_ATTEMPTS: ${APPEAL_SUBMISSION_RATE_LIMIT_ATTEMPTS:-10}
+      APPEAL_SUBMISSION_RATE_LIMIT_WINDOW_SECONDS: ${APPEAL_SUBMISSION_RATE_LIMIT_WINDOW_SECONDS:-3600}
+      OPERATOR_OVERDUE_HOURS: ${OPERATOR_OVERDUE_HOURS:-24}
+      APPLICANT_MAX_RETURNS: ${APPLICANT_MAX_RETURNS:-2}
+      EXPERT_COMPOSER_LOCK_TTL_SECONDS: ${EXPERT_COMPOSER_LOCK_TTL_SECONDS:-30}
+      ATTACHMENT_STORAGE_PATH: /var/lib/otklik/attachments
+      ATTACHMENT_MAX_BYTES: ${ATTACHMENT_MAX_BYTES:-10485760}
+      ATTACHMENT_MAX_COUNT: ${ATTACHMENT_MAX_COUNT:-5}
+      ATTACHMENT_MAX_PIXELS: ${ATTACHMENT_MAX_PIXELS:-40000000}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM_EMAIL: ${SMTP_FROM_EMAIL:-}
+      SMTP_FROM_NAME: ${SMTP_FROM_NAME:-Отклик}
+      SMTP_USE_TLS: ${SMTP_USE_TLS:-true}
+      STAFF_INVITE_TTL_HOURS: ${STAFF_INVITE_TTL_HOURS:-24}
+      STAFF_FRONTEND_BASE_URL: ${STAFF_FRONTEND_BASE_URL:-http://localhost:3000}
+      CRISIS_SUPPORT_TITLE: ${CRISIS_SUPPORT_TITLE:-Помощь в экстренной ситуации}
+      CRISIS_SUPPORT_MESSAGE: ${CRISIS_SUPPORT_MESSAGE:-Если прямо сейчас есть угроза жизни или безопасности, обратитесь в местную экстренную службу или к взрослому, которому доверяете.}
+      CRISIS_SUPPORT_PHONE: ${CRISIS_SUPPORT_PHONE:-}
+      CRISIS_SUPPORT_URL: ${CRISIS_SUPPORT_URL:-}
+      CRISIS_SUPPORT_REQUIRES_ORGANIZER_VERIFICATION: ${CRISIS_SUPPORT_REQUIRES_ORGANIZER_VERIFICATION:-true}
+      DEMO_OPERATOR_LOGIN: ${DEMO_OPERATOR_LOGIN:-demo_operator}
+      DEMO_OPERATOR_PASSWORD: ${DEMO_OPERATOR_PASSWORD:-OperatorDemo_2026!}
+      DEMO_EXPERT_LOGIN: ${DEMO_EXPERT_LOGIN:-demo_expert}
+      DEMO_EXPERT_PASSWORD: ${DEMO_EXPERT_PASSWORD:-ExpertDemo_2026!}
+      DEMO_PSYCHOLOGIST_LOGIN: ${DEMO_PSYCHOLOGIST_LOGIN:-demo_psychologist}
+      DEMO_PSYCHOLOGIST_PASSWORD: ${DEMO_PSYCHOLOGIST_PASSWORD:-ExpertDemo_2026!}
+      DEMO_LAWYER_LOGIN: ${DEMO_LAWYER_LOGIN:-demo_lawyer}
+      DEMO_LAWYER_PASSWORD: ${DEMO_LAWYER_PASSWORD:-ExpertDemo_2026!}
+      DEMO_SOCIAL_LOGIN: ${DEMO_SOCIAL_LOGIN:-demo_social}
+      DEMO_SOCIAL_PASSWORD: ${DEMO_SOCIAL_PASSWORD:-ExpertDemo_2026!}
+      DEMO_CONFLICT_LOGIN: ${DEMO_CONFLICT_LOGIN:-demo_conflict}
+      DEMO_CONFLICT_PASSWORD: ${DEMO_CONFLICT_PASSWORD:-ExpertDemo_2026!}
+      DEMO_ADMIN_LOGIN: ${DEMO_ADMIN_LOGIN:-demo_admin}
+      DEMO_ADMIN_PASSWORD: ${DEMO_ADMIN_PASSWORD:-AdminDemo_2026!}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - attachment_data:/var/lib/otklik/attachments
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+      bootstrap:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    stop_grace_period: 20s
+
+  postgres:
+    image: pgvector/pgvector:0.8.6-pg17-bookworm
+    container_name: otklik-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-otklik}
+      POSTGRES_USER: ${POSTGRES_USER:-otklik}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-otklik_demo_db_2026}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-otklik} -d ${POSTGRES_DB:-otklik}"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  valkey:
+    image: valkey/valkey:8.1.10-alpine
+    container_name: otklik-valkey
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - valkey_data:/data
+    command:
+      - valkey-server
+      - --appendonly
+      - "yes"
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  attachment_data:
+  postgres_data:
+  valkey_data:
