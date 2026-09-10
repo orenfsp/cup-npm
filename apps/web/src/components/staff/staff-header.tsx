@@ -83,8 +83,8 @@ export function StaffHeader({
 
   return (
     <>
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-62 flex-col border-r border-slate-200 bg-white lg:flex">
-        <div className="border-b border-slate-100 px-6 py-6">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-white/70 bg-white/80 shadow-[12px_0_40px_-32px_rgba(51,45,110,.45)] backdrop-blur-xl lg:flex">
+        <div className="border-b border-slate-100/80 px-6 py-6">
           <Brand />
         </div>
         <div className="px-5 pb-2 pt-5">
@@ -103,7 +103,7 @@ export function StaffHeader({
               aria-current={item.active ? "page" : undefined}
               className={`flex min-h-10 w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm font-medium transition-colors ${
                 item.active
-                  ? "bg-indigo-50 text-indigo-800 ring-1 ring-indigo-100"
+                  ? "bg-indigo-600 text-white shadow-[0_10px_24px_-14px_rgba(79,70,229,.9)]"
                   : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
               }`}
             >
