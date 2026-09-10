@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react"
 import { useRouter } from "next/navigation"
 
+import { OtklikLogo } from "@/components/brand/otklik-logo"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -45,10 +46,10 @@ export default function StaffLoginPage() {
   }
 
   return (
-    <main className="grid min-h-screen place-items-center bg-[radial-gradient(circle_at_top,#d9f5ec,transparent_35%),linear-gradient(#f9fffc,#f2f5f6)] p-4">
-      <Card className="w-full max-w-md border-slate-200/80 shadow-[0_30px_80px_-45px_rgba(15,23,42,.5)]">
+    <main className="grid min-h-screen place-items-center bg-[#f5f6fa] p-4">
+      <Card className="w-full max-w-md border-slate-200 shadow-[0_20px_50px_-35px_rgba(30,41,59,.35)]">
         <CardHeader>
-          <div className="mb-3 flex size-11 items-center justify-center rounded-2xl bg-teal-700 font-semibold text-white">О</div>
+          <OtklikLogo className="mb-4" size={42} />
           <CardTitle className="text-2xl">Вход для сотрудников</CardTitle>
           <CardDescription>Защищённое рабочее пространство Отклика.</CardDescription>
         </CardHeader>
@@ -78,7 +79,7 @@ export default function StaffLoginPage() {
               />
             </div>
             {error ? (
-              <p role="alert" className="text-sm text-destructive">
+              <p role="alert" className="state-error">
                 {error}
               </p>
             ) : null}

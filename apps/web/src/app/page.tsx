@@ -5,12 +5,12 @@ import { PublicShell } from "@/components/appeals/public-shell"
 export default function Home() {
   return (
     <PublicShell>
-      <section className="grid items-center gap-10 py-10 md:grid-cols-[1.15fr_.85fr] md:py-20">
-        <div className="space-y-6">
-          <p className="text-sm font-semibold tracking-[0.18em] text-teal-700 uppercase">
+      <section className="grid items-center gap-12 py-12 md:grid-cols-[1.15fr_.85fr] md:py-24">
+        <div className="space-y-7">
+          <p className="page-eyebrow">
             Анонимное доверенное обращение
           </p>
-          <h1 className="max-w-2xl text-4xl leading-[1.08] font-semibold tracking-[-0.035em] text-slate-950 sm:text-6xl">
+          <h1 className="max-w-2xl text-4xl leading-[1.1] font-semibold tracking-[-0.035em] text-slate-950 sm:text-5xl">
             О сложной ситуации можно рассказать без регистрации
           </h1>
           <p className="max-w-xl text-lg leading-8 text-slate-600">
@@ -20,13 +20,13 @@ export default function Home() {
           <div className="flex flex-col gap-3 sm:flex-row">
             <Link
               href="/appeal/new"
-              className="rounded-xl bg-teal-700 px-6 py-3.5 text-center font-medium text-white shadow-lg shadow-teal-900/10 hover:-translate-y-0.5 hover:bg-teal-800"
+              className="min-h-12 rounded-xl bg-indigo-600 px-6 py-3.5 text-center font-semibold text-white shadow-sm hover:bg-indigo-700 hover:shadow-md"
             >
               Отправить обращение
             </Link>
             <Link
               href="/appeal/check"
-              className="rounded-xl bg-white px-6 py-3.5 text-center font-medium shadow-sm ring-1 ring-slate-200 hover:-translate-y-0.5 hover:bg-slate-50"
+              className="min-h-12 rounded-xl bg-white px-6 py-3.5 text-center font-semibold shadow-sm ring-1 ring-slate-200 hover:bg-indigo-50 hover:text-indigo-800"
             >
               Проверить обращение
             </Link>
@@ -38,25 +38,24 @@ export default function Home() {
             ["2", "Сохраните номер", "Мы не храним его в открытом виде и не сможем восстановить."],
             ["3", "Проверяйте статус", "Введите номер позже — аккаунт не нужен."],
           ].map(([number, title, text]) => (
-            <article key={number} className="surface-card p-5">
+            <article key={number} className="surface-card p-6">
               <div className="flex gap-4">
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-teal-100 font-semibold text-teal-800">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-indigo-100 font-semibold text-indigo-800">
                   {number}
                 </span>
                 <div>
-                  <h2 className="font-semibold">{title}</h2>
-                  <p className="mt-1 text-sm leading-6 text-slate-600">{text}</p>
+                  <h2 className="text-lg font-semibold">{title}</h2>
+                  <p className="mt-1 text-[15px] leading-6 text-slate-600">{text}</p>
                 </div>
               </div>
             </article>
           ))}
         </div>
       </section>
-      <section className="relative overflow-hidden rounded-3xl bg-teal-950 p-6 text-teal-50 shadow-xl shadow-teal-950/10 sm:p-9">
-        <div className="absolute -top-16 -right-10 size-48 rounded-full bg-teal-700/30 blur-3xl" />
-        <p className="relative text-xs font-semibold tracking-[0.16em] text-teal-300 uppercase">Приватность</p>
-        <h2 className="relative mt-2 text-xl font-semibold">Конфиденциальность по умолчанию</h2>
-        <p className="mt-2 max-w-3xl leading-7 text-teal-100">
+      <section className="rounded-2xl border border-indigo-100 bg-indigo-50 p-6 text-slate-900 sm:p-9">
+        <p className="text-xs font-semibold tracking-[0.16em] text-indigo-700 uppercase">Приватность</p>
+        <h2 className="mt-2 text-xl font-semibold">Конфиденциальность по умолчанию</h2>
+        <p className="mt-2 max-w-3xl leading-7 text-slate-600">
           Отклик не создаёт аккаунт заявителя и не просит имя, почту, телефон или
           школу. Текст и ответы хранятся в зашифрованном виде отдельно от служебных
           данных.
